@@ -1,0 +1,7 @@
+#dropbox-status .dropbox-success {
+    color: green;
+}
+
+#dropbox-status .dropbox-failure {
+    color: red;
+}
