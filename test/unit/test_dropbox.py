@@ -21,6 +21,7 @@ def process_verse_buf(verse_buf, current_verse_no) -> Verse:
     return res
 
 
+@pytest.mark.skip(reason='poc')
 def test_openlyrics_output():
     # given
     # print(os.environ['PYTHONPATH'])

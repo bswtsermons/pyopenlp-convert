@@ -163,3 +163,4 @@ cython_debug/
 notes/
 openlp_convert/flask_session/
 openlyrics/
+openlp_convert/*.pem
