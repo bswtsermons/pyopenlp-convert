@@ -12,6 +12,9 @@ import tomllib
 from datetime import timedelta
 from flask import Flask, session, redirect, render_template, request, url_for, current_app, send_from_directory
 from flask_session import Session
+from openlyrics import tostring
+
+from convert import notes_to_song
 
 
 app = Flask(__name__)
@@ -35,17 +38,19 @@ def convert():
     Path(notes_path).mkdir(parents=True, exist_ok=True)
 
     service_name = request.form['name']
+    minister = request.form['minister']
+    notes = request.form['notes']
+    isUploadToDropBox = request.form.get('isUploadToDropBox')
 
-    # debug, would do actual conversion here
-    converted_notes = request.form['notes']
+    converted_notes = tostring(notes_to_song(service_name, minister, notes))
 
     # write file to local dir for download link
     with open(os.path.join(notes_path, f'{service_name}.xml'), 'w') as fh:
-        fh.write(request.form['notes'])
+        fh.write(converted_notes)
 
     dropbox_status = 'NOT_SENT'
 
-    if request.form.get('isUploadToDropBox') == 'on':
+    if isUploadToDropBox == 'on':
         dropbox_status = 'FAILURE'  # assume failure
         if 'access_token' in session:
             app.logger.info('uploading to dropbox')
@@ -63,7 +68,7 @@ def convert():
                     'response_type': 'code',
                     'token_access_type': 'online'
                 })
-                session['name'] = request.form['name']
+                session['name'] = service_name
                 return redirect(url)
 
             except Exception:
@@ -71,7 +76,7 @@ def convert():
                 traceback.print_exc(file=sys.stdout)
 
     return render_template('convert-status.html',
-        name=request.form['name'],
+        name=service_name,
         dropbox_status=dropbox_status
     )
 
@@ -94,7 +99,7 @@ def dropbox_ouath_callback():
         'client_secret': app.config['DROPBOX']['APP_SECRET'],
         'redirect_uri': url_for('dropbox_ouath_callback', _external=True),
     }
-    
+
     app.logger.info('using auth code to get access token')
 
     try:
@@ -108,7 +113,7 @@ def dropbox_ouath_callback():
         notes_path = os.path.join(current_app.root_path, app.config['NOTES_DIR'])
         with open(os.path.join(notes_path, f'{service_name}.xml')) as fh:
             converted_notes = fh.read()
-        
+
         dropbox_status = 'FAILURE'
 
         app.logger.info('uploading to dropbox')

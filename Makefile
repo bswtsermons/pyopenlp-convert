@@ -6,6 +6,9 @@ clean:
 install:
 	python -m pipenv install
 
+install/dev:
+	python -m pipenv install --dev
+
 openlyrics/clone:
 	git clone https://github.com/openlyrics/openlyrics.git
 
@@ -13,6 +16,7 @@ openlyrics/port-to-python3:
 	2to3 -w openlyrics/lib/python/openlyrics.py
 
 test:
+	cp .env.test .env
 	python -m pipenv run python -m pytest test/unit -s
 
 docker/build:
@@ -36,10 +40,14 @@ docker/run/daemon:
 #   python -m pipenv run python -m flask run
 
 flask/run:
+	# there is probably a better way of doing this
+	cp .env.flask .env
 	cd openlp_convert && \
-		python -m pipenv run python -m flask run
+		PYTHONPATH=${PYTHONPATH}:../openlyrics/lib/python \
+			python -m pipenv run python -m flask run
 
 gunicorn/run:
+	cp .env.flask .env
 	cd openlp_convert && \
 		python -m pipenv run python -m gunicorn app:app
 

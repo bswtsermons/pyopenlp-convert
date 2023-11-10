@@ -13,6 +13,7 @@ gunicorn = "*"
 [dev-packages]
 pytruth = "*"
 pytest = "*"
+faker = "*"
 
 [requires]
 python_version = "3.11"
