@@ -31,8 +31,6 @@ def index():
 @app.route('/openlp-convert/convert', methods=['POST'])
 def convert():
     # save form to static dir
-    print(json.dumps(app.config, indent=2, default=str))
-    print(url_for('dropbox_ouath_callback', _external=True))
     notes_path = os.path.join(current_app.root_path, app.config['NOTES_DIR'])
     Path(notes_path).mkdir(parents=True, exist_ok=True)
 
@@ -47,7 +45,7 @@ def convert():
 
     dropbox_status = 'NOT_SENT'
 
-    if request.form['isUploadToDropBox'] == 'on':
+    if request.form.get('isUploadToDropBox') == 'on':
         dropbox_status = 'FAILURE'  # assume failure
         if 'access_token' in session:
             app.logger.info('uploading to dropbox')
@@ -69,7 +67,7 @@ def convert():
                 return redirect(url)
 
             except Exception:
-                print('Unable to upload notes to dropbox')
+                app.logger.exception('Unable to upload notes to dropbox')
                 traceback.print_exc(file=sys.stdout)
 
     return render_template('convert-status.html',
@@ -80,7 +78,7 @@ def convert():
 
 @app.route('/openlp-convert/download_notes', methods=['GET'])
 def download_notes():
-    notes_path = os.path.join(current_app.root_path, app.config['notes_dir'])
+    notes_path = os.path.join(current_app.root_path, app.config['NOTES_DIR'])
 
     return send_from_directory(notes_path, f"{request.args.get('name')}.xml", as_attachment=True)
 
