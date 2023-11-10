@@ -38,3 +38,8 @@ docker/run/daemon:
 flask/run:
 	cd openlp_convert && \
 		python -m pipenv run python -m flask run
+
+gunicorn/run:
+	cd openlp_convert && \
+		python -m pipenv run python -m gunicorn app:app
+
