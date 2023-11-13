@@ -7,19 +7,24 @@ ENV INSTALL_DIR /opt/pyopenlp_convert
 RUN mkdir -p $INSTALL_DIR
 # RUN mkdir -p $INSTALL_DIR/openlyrics/lib/
 
-COPY Makefile ${INSTALL_DIR}
-COPY Pipfile ${INSTALL_DIR}
-COPY Pipfile.lock ${INSTALL_DIR}
-COPY docker/entrypoint.bash ${INSTALL_DIR}
-COPY openlp_convert/ ${INSTALL_DIR}/openlp_convert
-# COPY openlyrics/lib/python/openlyrics.py $INSTALL_DIR/openlyrics/lib/python/openlyrics.py 
-
 WORKDIR ${INSTALL_DIR}
 
-# should have everything we need.  get the code running
-RUN make install
-RUN make openlyrics/clone openlyrics/port-to-python3
+COPY Makefile Pipfile Pipfile.lock ./
 
-EXPOSE 5000
+# install pipenv virtual env and fix openlyrics code
+RUN make install
+# RUN make openlyrics/clone openlyrics/port-to-python3
+
+# need environment and entrypoint
+COPY .env.docker .env.gunicorn
+COPY docker/entrypoint.bash .
+
+# install code
+COPY openlp_convert/ ${INSTALL_DIR}/openlp_convert
+
+# copy openlyrics code
+COPY openlyrics/lib/python/openlyrics.py openlp_convert/ 
+
+EXPOSE 8000
 
 ENTRYPOINT [ "/bin/bash", "./entrypoint.bash" ]

@@ -19,25 +19,22 @@ test:
 	cp .env.test .env
 	python -m pipenv run python -m pytest test/unit -s
 
-docker/build:
+docker/build: clean openlyrics/clone openlyrics/port-to-python3
 	docker build -t pyopenlp-convert -f docker/Dockerfile .
 
 docker/run:
-	docker run -it pyopenlp-convert
-
-docker/run/daemon:
 	docker run \
-		-p 5000:5000 \
-		-itd \
-		--name pyopenlp-convert \
-		pyopenlp-convert
+		-it \
+		-d \
+		-p 8000:8000 \
+	  	pyopenlp-convert
 
-# flask/run:
-# cd openlp_convert && \
-#   FLASK_APP=hello \
-#   FLASK_NOTES_DIR=notes \
-#   FLASK_SESSION_TYPE=filesystem \
-#   python -m pipenv run python -m flask run
+# docker/run/daemon:
+# 	docker run \
+# 		-p 8000:8000 \
+# 		-itd \
+# 		--name pyopenlp-convert \
+# 		pyopenlp-convert
 
 flask/run:
 	# there is probably a better way of doing this
@@ -47,7 +44,6 @@ flask/run:
 			python -m pipenv run python -m flask run
 
 gunicorn/run:
-	cp .env.flask .env
+	cp .env.gunicorn .env
 	cd openlp_convert && \
 		python -m pipenv run python -m gunicorn app:app
-

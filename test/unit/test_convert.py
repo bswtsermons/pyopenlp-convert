@@ -79,7 +79,6 @@ def test_notes_to_song_integration():
     # when
     output = notes_to_song(fake_title, fake_author, fake_notes)
 
-
     # then
     print(tostring(output))
     AssertThat(tostring(output)).IsEqualTo('foo')

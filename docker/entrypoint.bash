@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-make flask/run
+make gunicorn/run

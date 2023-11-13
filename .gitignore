@@ -164,3 +164,6 @@ notes/
 openlp_convert/flask_session/
 openlyrics/
 openlp_convert/*.pem
+
+# ignore docker env file since it likely has sensitive variables
+.env.docker
