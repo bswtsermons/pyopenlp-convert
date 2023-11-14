@@ -2,7 +2,7 @@ NOTES_DIR = "notes"
 SESSION_TYPE = "filesystem"
 # override this with an environment variable when running somewhere other than
 # localhost
-SERVER_NAME = 'localhost:5000'
+SERVER_NAME = 'localhost:8000'
 
 # dropbox config
 [DROPBOX]

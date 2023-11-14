@@ -1,16 +1,13 @@
-import os
 import sys
 import traceback
-from pathlib import Path
 import urllib.parse
-import json
 
 import requests
 import dropbox
 import logging
 import tomllib
 from datetime import timedelta
-from flask import Flask, session, redirect, render_template, request, url_for, current_app, send_from_directory
+from flask import Flask, Response, session, redirect, render_template, request, url_for
 from flask_session import Session
 from openlyrics import tostring
 
@@ -33,29 +30,30 @@ def index():
 
 @app.route('/openlp-convert/convert', methods=['POST'])
 def convert():
-    # save form to static dir
-    notes_path = os.path.join(current_app.root_path, app.config['NOTES_DIR'])
-    Path(notes_path).mkdir(parents=True, exist_ok=True)
-
+    # get request data
     service_name = request.form['name']
     minister = request.form['minister']
     notes = request.form['notes']
     isUploadToDropBox = request.form.get('isUploadToDropBox')
 
+    # magic happens here
     converted_notes = tostring(notes_to_song(service_name, minister, notes))
 
-    # write file to local dir for download link
-    with open(os.path.join(notes_path, f'{service_name}.xml'), 'w') as fh:
-        fh.write(converted_notes)
+    # write converted service to session
+    session[f'notes_{service_name}'] = converted_notes
 
-    dropbox_status = 'NOT_SENT'
+    dropbox_status = 'NOT_SENT'  # default status is to do nothing
 
     if isUploadToDropBox == 'on':
         dropbox_status = 'FAILURE'  # assume failure
         if 'access_token' in session:
             app.logger.info('uploading to dropbox')
             dbx = dropbox.Dropbox(session['access_token'])
-            dbx.files_upload(bytes(converted_notes, 'UTF-8'), f'/{service_name}.xml', mode=dropbox.files.WriteMode("overwrite"))
+            dbx.files_upload(
+                bytes(converted_notes, 'UTF-8'),
+                f'/{service_name}.xml',
+                mode=dropbox.files.WriteMode("overwrite")
+            )
             dropbox_status = 'SUCCESS'
 
         else:
@@ -75,7 +73,8 @@ def convert():
                 app.logger.exception('Unable to upload notes to dropbox')
                 traceback.print_exc(file=sys.stdout)
 
-    return render_template('convert-status.html',
+    return render_template(
+        'convert-status.html',
         name=service_name,
         dropbox_status=dropbox_status
     )
@@ -83,9 +82,16 @@ def convert():
 
 @app.route('/openlp-convert/download_notes', methods=['GET'])
 def download_notes():
-    notes_path = os.path.join(current_app.root_path, app.config['NOTES_DIR'])
+    # pull service name and converted notes from session
+    service_name = session['name']
+    converted_notes = session[f'notes_{service_name}']
+    app.logger.info(f'downloading notes for {service_name}')
 
-    return send_from_directory(notes_path, f"{request.args.get('name')}.xml", as_attachment=True)
+    return Response(
+        converted_notes,
+        mimetype='text/xml',
+        headers={'Content-disposition': f'attachment; filename={service_name}.csv'}
+    )
 
 
 @app.route('/openlp-convert/dropbox-oauth-callback', methods=['GET'])
@@ -100,25 +106,27 @@ def dropbox_ouath_callback():
         'redirect_uri': url_for('dropbox_ouath_callback', _external=True),
     }
 
-    app.logger.info('using auth code to get access token')
-
     try:
+        app.logger.info('using auth code to get access token')
         resp = requests.post(app.config['DROPBOX']['TOKEN_URI'], data=data)
         resp.raise_for_status()
+
         access_token = resp.json()['access_token']
         session['access_token'] = access_token
         service_name = session['name']
 
-        app.logger.info('reading in notes file content')
-        notes_path = os.path.join(current_app.root_path, app.config['NOTES_DIR'])
-        with open(os.path.join(notes_path, f'{service_name}.xml')) as fh:
-            converted_notes = fh.read()
+        # pull notes from session
+        converted_notes = session[f'notes_{service_name}']
 
-        dropbox_status = 'FAILURE'
+        dropbox_status = 'FAILURE'  # assume failure
 
         app.logger.info('uploading to dropbox')
         dbx = dropbox.Dropbox(access_token)
-        dbx.files_upload(bytes(converted_notes, 'UTF-8'), f'/{service_name}.xml', mode=dropbox.files.WriteMode("overwrite"))
+        dbx.files_upload(
+            f=bytes(converted_notes, 'UTF-8'),
+            path=f'/{service_name}.xml',
+            mode=dropbox.files.WriteMode("overwrite")
+        )
         dropbox_status = 'SUCCESS'
 
     except Exception:
@@ -127,7 +135,8 @@ def dropbox_ouath_callback():
 
     app.logger.info('rendering template')
 
-    return render_template('convert-status.html',
+    return render_template(
+        'convert-status.html',
         name=service_name,
         dropbox_status=dropbox_status
     )

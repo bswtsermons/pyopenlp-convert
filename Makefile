@@ -40,8 +40,7 @@ flask/run:
 	# there is probably a better way of doing this
 	cp .env.flask .env
 	cd openlp_convert && \
-		PYTHONPATH=${PYTHONPATH}:../openlyrics/lib/python \
-			python -m pipenv run python -m flask run
+		python -m pipenv run python -m flask run
 
 gunicorn/run:
 	cp .env.gunicorn .env
