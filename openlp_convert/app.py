@@ -40,6 +40,7 @@ def convert():
     converted_notes = tostring(notes_to_song(service_name, minister, notes))
 
     # write converted service to session
+    session['name'] = service_name
     session[f'notes_{service_name}'] = converted_notes
 
     dropbox_status = 'NOT_SENT'  # default status is to do nothing
@@ -66,7 +67,6 @@ def convert():
                     'response_type': 'code',
                     'token_access_type': 'online'
                 })
-                session['name'] = service_name
                 return redirect(url)
 
             except Exception:
