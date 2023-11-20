@@ -90,7 +90,7 @@ def download_notes():
     return Response(
         converted_notes,
         mimetype='text/xml',
-        headers={'Content-disposition': f'attachment; filename={service_name}.csv'}
+        headers={'Content-disposition': f'attachment; filename={service_name}.xml'}
     )
 
 
