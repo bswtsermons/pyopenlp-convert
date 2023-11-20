@@ -1,21 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Sermon Notes to OpenLP Conversion Status</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"
-</head>
-<body>
-    <h1>Sermon Notes to OpenLP Conversion Status</h1>
+{% extends "layout.html" %}
+{% block title %}Sermon Notes Converted{% endblock %}
+{% block pagetitle %}Sermon Notes Converted{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock %}
+{% block content %}
     <div>Thank you for submitting your sermon notes.</div>
     <div>Click the button below to download the service:</div>
     <div>
         <a href="{{ url_for('download_notes', name=name) }}">
             <i class="bi bi-download">Click to download the service {{ name }}.</i></div>
         </a>
-    
+
     <div id="dropbox-status">
         {% if dropbox_status == 'NOT_SENT' %}
             <div>A copy of the notes was not sent to DropBox.</div>
@@ -31,5 +30,4 @@
     <div id="another">
         <a href="{{ url_for('convert') }}">Click here to upload another.</a>
     </div>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+        <meta charset="UTF-8">
+        <title>{% block title %}{% endblock %} - Sermon Notes to OpenLP Conversion</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% endblock %}
+</head>
+<body>
+    {% block header %}
+        <h1>
+            <img id="header-logo" src="{{ url_for('static', filename='openlp-logo.png') }}" />
+            OpenLP Sermon Notes Conversion
+        </h1>
+        <hr />
+        <h2>{% block pagetitle %}{% endblock %}</h2>
+    {% endblock %}
+    <div id="content">{% block content %}{% endblock %}</div>
+    <div id="footer">
+        {% block footer %}
+            <hr />
+            &copy; Copyright 2023 by <a href="http://www.bswt.org/">Believer's Spoken Word Tabernacle</a>.
+        {% endblock %}
+    </div>
+</body>
+</html>

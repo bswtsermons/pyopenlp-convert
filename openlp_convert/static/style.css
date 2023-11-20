@@ -1,7 +1,17 @@
+body {
+    margin: 2px;
+    /* padding: 0; */
+}
+
 #dropbox-status .dropbox-success {
     color: green;
 }
 
 #dropbox-status .dropbox-failure {
     color: red;
+}
+
+#header-logo {
+    max-width: 10%;
+    height: auto;
 }
