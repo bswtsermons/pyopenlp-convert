@@ -1,5 +1,7 @@
 .PHONY: test
 
+DOCKER_ID := $(shell docker ps -a -q --filter ancestor="pyopenlp-convert")
+
 clean:
 	rm -rf openlyrics
 
@@ -13,14 +15,20 @@ openlyrics/clone:
 	git clone https://github.com/openlyrics/openlyrics.git
 
 openlyrics/port-to-python3:
-	2to3 -w openlyrics/lib/python/openlyrics.py
+	python -m lib2to3 -w openlyrics/lib/python/openlyrics.py
+
+build: clean openlyrics/clone openlyrics/port-to-python3
 
 test:
 	cp .env.test .env
 	python -m pipenv run python -m pytest test/unit -s
 
-docker/build: clean openlyrics/clone openlyrics/port-to-python3
+docker/build: build
 	docker build -t pyopenlp-convert -f docker/Dockerfile .
+
+docker/stop:
+	docker stop $(DOCKER_ID)
+	docker rm $(DOCKER_ID)
 
 docker/run:
 	docker run \
